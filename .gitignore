@@ -1,0 +1,33 @@
+# Virtual environment
+venv/
+env/
+*.env
+.venv/
+build/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE-specific files
+.vscode/
+.idea/
+*.iml
+
+# Python packaging
+*.egg-info/
+*.egg
+*.whl
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*.swo
+*.~lock.*
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+*.7z
