@@ -103,35 +103,74 @@ def create_file(file_path,replace_existing: bool = False)-> bool :
     log.success(f"File: {file_path} was successfully replaced")
     return True
 
-def move_file(source_file_path,target_file_path,replace_existing_target_file: bool = False,create_file_if_not_exist: bool = False) -> bool:
-    source_file_path = source_file_path if isinstance(source_file_path, Path) else Path(source_file_path)
-    target_file_path= target_file_path if isinstance(target_file_path, Path) else Path(target_file_path)
-    log.info(f"Attempting to move file: {source_file_path} to {target_file_path}")
-    source_file_exists= check_file_exists(source_file_path)
-    target_file_exists= check_file_exists(target_file_path)
-    if source_file_path.is_dir():
-        log.error(f"Source file: {source_file_path} is a directory")
+def _transfer_file(source_file_path, target_file_path, operation: str,
+                   replace_existing_target_file: bool = False,
+                   create_file_if_not_exist: bool = False) -> bool:
+
+    source = source_file_path if isinstance(source_file_path, Path) else Path(source_file_path)
+    target = target_file_path if isinstance(target_file_path, Path) else Path(target_file_path)
+    log.info(f"Attempting to {operation} file: {source} -> {target}")
+    source_exists = check_file_exists(source)
+    target_exists = check_file_exists(target)
+    if source.is_dir():
+        log.error(f"Source is a directory: {source}")
         return False
-    if target_file_path.is_dir():
-        log.error(f"target file: {target_file_path} is a directory")
-    if not source_file_exists and not create_file_if_not_exist:
-        log.error(f"File {source_file_path} does not exist and create_file_if_not_exist is: {create_file_if_not_exist}")
+    if target.is_dir():
+        log.error(f"Target is a directory: {target}")
         return False
-    if target_file_exists and not replace_existing_target_file:
-        log.error(f"file {source_file_path.parts[-1]} already exists at {target_file_path} and replace_existing_target_file is: {replace_existing_target_file}")
+    if not source_exists:
+        if create_file_if_not_exist:
+            if not create_file(target, replace_existing_target_file):
+                log.error(f"Failed to create target file: {target}")
+                return False
+            log.success(f"Created target file {target} because source did not exist")
+            return True
+        log.error(f"Source file does not exist: {source}")
         return False
-    if target_file_exists:
-        log.info(f"File: {source_file_path.parts[-1]} already exists at target path: {target_file_path} and will be overwritten")
-    if not source_file_exists:
-        log.info(f"File: {source_file_path.parts[-1]} does not exist and will be created at filepath: {target_file_path}")
+    if target_exists:
+        if not replace_existing_target_file:
+            log.error(f"Target already exists and replace not allowed: {target}")
+            return False
+        try:
+            target.unlink()
+        except Exception as e:
+            log.error(f"Failed to remove existing target {target}: {e}")
+            return False
     try:
-        shutil.move(str(source_file_path), str(target_file_path))
-    except WindowsError:
-        create_file(target_file_path, replace_existing_target_file)
+        target.parent.mkdir(parents=True, exist_ok=True)
     except Exception as e:
-        log.error(f"Failed to move file: {source_file_path} -> {target_file_path}")
-    if source_file_path.exists() or not target_file_path.exists():
-        log.error(f"Failed to move file: {source_file_path} to: {target_file_path}")
+        log.error(f"Failed to ensure parent directory for target {target}: {e}")
         return False
-    log.success(f"Successfully moved file from {source_file_path} to: {target_file_path}")
+    try:
+        if operation == "move":
+            shutil.move(str(source), str(target))
+        elif operation == "copy":
+            shutil.copy2(str(source), str(target))
+        else:
+            log.error(f"Unsupported operation: {operation}")
+            return False
+    except Exception as e:
+        log.error(f"Failed to {operation} file: {source} -> {target}: {e}")
+        return False
+    if operation == "move":
+        if source.exists() or not target.exists():
+            log.error(f"Move failed: source exists={source.exists()}, target exists={target.exists()}")
+            return False
+    else:
+        if not target.exists():
+            log.error(f"Copy failed: target does not exist after copy: {target}")
+            return False
+    log.success(f"Successfully {operation}d file: {source} -> {target}")
     return True
+
+
+def move_file(source_file_path, target_file_path, replace_existing_target_file: bool = False,
+              create_file_if_not_exist: bool = False) -> bool:
+    return _transfer_file(source_file_path, target_file_path, "move",
+                          replace_existing_target_file, create_file_if_not_exist)
+
+
+def copy_file(source_file_path, target_file_path, replace_existing_target_file: bool = False,
+              create_file_if_not_exist: bool = False) -> bool:
+    return _transfer_file(source_file_path, target_file_path, "copy",
+                          replace_existing_target_file, create_file_if_not_exist)
