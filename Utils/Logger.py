@@ -67,7 +67,6 @@ class LoggerClass:
 
             levels = [" DEBUG "," VALUE ","  INFO ","SUCCESS","WARNING"," ERROR "]
             if not self.prevent_color and log_color:
-                logger_logger("log_color is True and prevent_color is False", self.logger_name)
                 levels = [color.Fore.LIGHTWHITE_EX+' DEBUG '+color.Fore.RESET,
                           color.Fore.MAGENTA+' VALUE '+color.Fore.RESET,
                           color.Fore.CYAN+' INFO '+color.Fore.RESET,
