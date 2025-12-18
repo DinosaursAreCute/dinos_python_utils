@@ -72,12 +72,12 @@ def check_file_exists(file_path: Path) -> bool:
     return True
 
 def delete_file(file_path) -> bool:
-    file_path = file_path if isinstance(file_path,Path) else Path(file_path)
+    file_path = file_path if isinstance(file_path, Path) else Path(file_path)
     log.debug(f"Trying to remove file: {file_path}")
     try:
         file_path.unlink()
     except FileNotFoundError:
-        log.warning(f"Tried to remove file: {file_path} but file does not exist")
+        log.error(f"Tried to remove file: {file_path} but file does not exist")
         return False
     if not file_path.exists():
         log.success(f"Successfully removed {file_path}")
@@ -85,3 +85,20 @@ def delete_file(file_path) -> bool:
     else:
         log.error(f"Failed to remove file: {file_path}")
         return False
+
+def create_file(file_path,replace_existing: bool = False)-> bool :
+    file_path = file_path if isinstance(file_path, Path) else Path(file_path)
+    log.debug(f"Trying to create file: {file_path}")
+    if file_path.exists() and not replace_existing:
+        log.error(f"File: {file_path} already exists and replace files is: False.")
+        return False
+    if file_path.exists():
+        log.info(f"File: {file_path} already exists and will be replaced")
+
+    try:
+        file_path.touch()
+    except Exception as e:
+        log.error(f"Failed to create file due to: {e}")
+        return False
+    log.success(f"File: {file_path} was successfully replaced")
+    return True

@@ -15,5 +15,6 @@ if __name__ == "__main__":
     for x in subdirMap:
         files=fOps.list_files(x)
 
+
+    fOps.create_file(path)
     fOps.check_file_exists(path)
-    fOps.delete_file(path)
