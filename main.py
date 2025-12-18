@@ -1,3 +1,4 @@
+import logging
 import types
 from pathlib import *
 
@@ -8,8 +9,11 @@ import ioHelper.fileOperations as fOps
 
 if __name__ == "__main__":
 
-    log1 = Logger.LoggerClass(logger_name="TestLogger",logger_level = 0,log_color = True)
+    log1 = Logger.LoggerClass(logger_name="TestLogger",logger_level = 1,log_color = True)
     path = fOps.convert_string_to_path(".")
     subdirMap=fOps.list_subdirectories(path,True)
     for x in subdirMap:
-        print(x)
+        files=fOps.list_files(x)
+        for f in files:
+            f=f.parts[-1]
+            print("                                                     -",f)

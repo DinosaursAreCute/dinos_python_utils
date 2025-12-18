@@ -4,7 +4,7 @@ from pathlib import *
 import Utils.Logger
 
 # ======================== Initialization ========================
-log = Utils.Logger.LoggerClass(logger_name="FileOperationsLogger",logger_level = 0,log_color = True)
+log = Utils.Logger.LoggerClass(logger_name="FileOperationsLogger",logger_level = 1,log_color = True)
 
 
 # ======================== Common Utils ========================
@@ -50,3 +50,14 @@ def list_subdirectories(root_path,recursive: bool = False):
 
 
 # ======================== File Utils ========================
+
+def list_files(root_path):
+    root = root_path if isinstance(root_path,Path) else Path(root_path)
+    if not root.exists():
+        log.debug(f"search path does not exist: {root}")
+    if not root.is_dir():
+        log.debug(f"search path is not a directory: {root}")
+        return []
+    files= [f for f in root.iterdir() if not f.is_dir()]
+    log.debug(f"found {len(files)} files under {root}")
+    return files

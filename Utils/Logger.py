@@ -60,7 +60,6 @@ class LoggerClass:
                 log_name = self.log_name
             if log_level is None:
                 log_level = self.log_level
-            if log_color is None:
                 log_color = self.log_color
             if message_log_level -5 > 0:
                 logger_logger(f"Encountered invalid message_log_level: {message_log_level} during prefix construction", self.logger_name)
@@ -93,7 +92,7 @@ class LoggerClass:
         def log_message(self,msg: str,log_level: int):
             # int log_level: 0=Debug 1=Value 2=Info 3=Success 4=Warning 5=Error
             if log_level < self.logger_level:
-                logger_logger(f"log level {log_level} is lower than set logger level {self.logger_level}. Message will be discarded", self.logger_name)
+                if self.logger_debug: logger_logger(f"log level {log_level} is lower than set logger level {self.logger_level}. Message will be discarded", self.logger_name)
                 return
             log_message = f"{self.construct_prefix(log_level)}{msg}"
             print(log_message)
