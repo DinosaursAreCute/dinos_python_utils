@@ -1,9 +1,10 @@
 from pathlib import *
 import shutil
 import Utils.Logger
-
+import fileinput
+import yaml
 # ======================== Initialization ========================
-log = Utils.Logger.LoggerClass(logger_name="FileOperationsLogger",logger_level = 0,log_color = True)
+log = Utils.Logger.LoggerClass(logger_name="FileOperationsLogger",logger_level = 1,log_color = True)
 
 
 # ======================== Common Utils ========================
@@ -336,6 +337,71 @@ def rename_file(file_path,name: str,replace_existing_file: bool = False) -> bool
     log.success(f"Successfully renamed file: {file_path} to {new_path}")
     return True
 
+def read_file(file_path,strip: bool = False,enumerate: bool = False, debug: bool = False):
+    file_path = file_path if isinstance(file_path, Path) else Path(file_path)
+    if not check_file_exists(file_path):
+        log.error(f"File not found or is directory. {file_path}")
+        return None
+    
+    with open(file=file_path,mode="+r") as file:
+        if enumerate:
+            file_content = {}    
+            i = 0
+            for line in file:
+                if strip:
+                    line = line.strip()
+                if debug:
+                    log.debug(f"index={i},line={line}")
+                file_content[i]=line
+                i=i+1
+        else:
+            file_content=[]
+            for line in file:
+                if strip: line.strip 
+                if debug: log.debug(f"Read line:'{line}'")
+                file_content.append(line)
+    return file_content
 
+
+
+def read_file_yaml(file_path):
+    file_path = file_path if isinstance(file_path, Path) else Path(file_path)
+    if not check_file_exists(file_path):
+            log.error("File not found")
+            return None
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            return yaml.safe_load(f)
+    except yaml.YAMLError as e:
+    # YAML syntax / parsing error
+        raise ValueError(f"Invalid YAML in '{file_path}': {e}") from e
+    except OSError as e:
+    # Problems opening/reading the file
+        raise OSError(f"Error reading '{file_path}': {e}") from e
+
+def write_to_file(file_path:str|Path,data:list|dict,debug:bool=False):
+    file_path = file_path if isinstance(file_path, Path) else Path(file_path)
+    if not check_file_exists(file_path=file_path):
+        log.error(f"Cannot Write to unaccesable file. {file_path}") 
+        raise FileNotFoundError()
+    write_data=[]
+    if type(data) == dict:
+        for key in data:
+            write_data.append(data[key]+"\n")
+        if debug: log.debug(f"Data to write:{write_data}")
+    elif type(data) == list:
+        for line in data: 
+            write_data.append(line+"\n")
+        if debug: log.debug(f"Data to write:{write_data}")
+    else:
+        log.error(f"Expected 'data' as either 'list' or 'dict' but received {type(data)}")
+    try:
+        with open(file=file_path,mode="w+") as file:
+            file.writelines(write_data)
+    except OSError as e:
+        log.error(f"Writing to {file_path} failed due to:", e)
+        
 if __name__ == "__main__":
     print(list_subdirectories(Path("a")).__doc__)
+    
+    

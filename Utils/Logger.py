@@ -149,19 +149,20 @@ class LoggerClass:
             log_color = self.log_color
         if log_function is None:
             log_function = self.log_function
-
-        if message_log_level - 5 > 0:
+        levels = [" DEBUG ", " VALUE ", "  INFO ", "SUCCESS", "WARNING", " ERROR "," FATAL "]
+        if message_log_level - len(levels) > 0:
             logger_logger(f"Encountered invalid message_log_level: {message_log_level} during prefix construction",
                           self.logger_name)
 
-        levels = [" DEBUG ", " VALUE ", "  INFO ", "SUCCESS", "WARNING", " ERROR "]
         if not self.prevent_color and log_color:
-            levels = [color.Fore.LIGHTWHITE_EX + ' DEBUG ' + color.Fore.RESET,
+            levels = [color.Fore.RESET + ' DEBUG ' + color.Fore.RESET,
                       color.Fore.MAGENTA + ' VALUE ' + color.Fore.RESET,
                       color.Fore.CYAN + ' INFO ' + color.Fore.RESET,
                       color.Fore.LIGHTGREEN_EX + 'SUCCESS' + color.Fore.RESET,
                       color.Fore.YELLOW + 'WARNING' + color.Fore.RESET,
-                      color.Back.RED + color.Style.BRIGHT + color.Fore.BLACK + ' ERROR ' + color.Style.RESET_ALL]
+                      color.Fore.LIGHTRED_EX + color.Style.BRIGHT + ' ERROR ' + color.Style.RESET_ALL,
+                      color.Back.RED + color.Style.BRIGHT + color.Fore.BLACK + ' FATAL ' + color.Style.RESET_ALL
+                      ]
 
         time = datetime.now()
         parts = []
@@ -246,3 +247,11 @@ class LoggerClass:
             msg: Message body (converted to str when formatted).
         """
         self.log_message(msg, 5)
+    
+    def fatal(self,msg):
+        """Log an ERROR level message (level 5).
+
+        Args:
+            msg: Message body (converted to str when formatted).
+        """
+        self.log_message(msg,6)
